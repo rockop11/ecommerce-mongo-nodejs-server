@@ -1,0 +1,24 @@
+# Ignorar node_modules
+node_modules/
+
+# Ignorar el archivo .env que contiene variables de entorno sensibles
+.env
+
+# Ignorar el archivo de claves de Firebase
+src/data/firebase/keys/serviceAccountKey.json
+
+# Ignorar la carpeta 'mongo' en la raíz del proyecto
+/mongo/
+
+# Ignorar archivos y carpetas relacionadas con logs
+/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignorar archivos de sistema (por ejemplo, en macOS)
+.DS_Store
+
+# Ignorar caché de npm
+npm-cache/
