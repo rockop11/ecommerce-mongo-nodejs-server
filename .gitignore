@@ -5,7 +5,8 @@ node_modules/
 .env
 
 # Ignorar el archivo de claves de Firebase
-src/data/firebase/keys/serviceAccountKey.json
+src/data/firebase/serviceAccountKey.json
+
 
 # Ignorar la carpeta 'mongo' en la raíz del proyecto
 /mongo/
