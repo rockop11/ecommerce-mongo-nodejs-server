@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const userModel = require("../../data/mongodb/models/userModel")
+const User = require("../../data/mongodb/models/userModel")
 const { envs } = require('../../config/plugins')
 const { storage } = require('../../data/firebase/firebaseConfig');
 const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
@@ -19,7 +19,7 @@ const authApiControllers = {
                 });
             }
 
-            const userFounded = await userModel.findOne({
+            const userFounded = await User.findOne({
                 $or: [
                     { email },
                     { username }
@@ -76,7 +76,7 @@ const authApiControllers = {
                 })
             }
 
-            const userRegistered = await userModel.findOne({
+            const userRegistered = await User.findOne({
                 $or: [
                     { email },
                     { username }
@@ -97,7 +97,7 @@ const authApiControllers = {
 
             await uploadBytes(storageRef, file.buffer, metadata)
 
-            await userModel.create({
+            await User.create({
                 name: name,
                 username: username,
                 password: bcrypt.hashSync(password, 10),
@@ -126,7 +126,7 @@ const authApiControllers = {
 
             let image;
 
-            const userFounded = await userModel.findById(_id)
+            const userFounded = await User.findById(_id)
 
             //si llega la imagen...
             if (file !== undefined) {
@@ -151,7 +151,7 @@ const authApiControllers = {
             const filter = { _id }
             const update = { name, username, email, image }
 
-            const userToEdit = await userModel.findOneAndUpdate(filter, update, {
+            const userToEdit = await User.findOneAndUpdate(filter, update, {
                 new: true
             })
 
@@ -173,7 +173,7 @@ const authApiControllers = {
         try {
             const { _id, password } = req.body
 
-            await userModel.findByIdAndUpdate(_id, {
+            await User.findByIdAndUpdate(_id, {
                 password: bcrypt.hashSync(password, 10)
             })
 
@@ -194,7 +194,7 @@ const authApiControllers = {
 
     getAllUsers: async (req, res) => {
         try {
-            const users = await userModel.find()
+            const users = await User.find()
 
             const userWithoutProps = await Promise.all(users.map(async (user) => {
                 const { password: _, ...userWithoutProps } = user.toObject()
@@ -221,7 +221,7 @@ const authApiControllers = {
             const filter = { _id }
             const update = { isAdmin: isAdmin }
 
-            const updatedUser = await userModel.findOneAndUpdate(filter, update, {
+            const updatedUser = await User.findOneAndUpdate(filter, update, {
                 new: true
             })
 
@@ -238,7 +238,25 @@ const authApiControllers = {
     },
 
     deleteUser: async (req, res) => {
-        //borrar usuarios
+        const { id } = req.params
+
+        try {
+            const userToDelete = await User.findById(id)
+
+            await User.findByIdAndDelete(id);
+
+            const userImageRef = ref(storage, `/users-avatars/${userToDelete.email}/${userToDelete.image}`)
+            await deleteObject(userImageRef)
+
+            res.status(204).json({
+                message: `se elimino el Usuario con id: ${id}`,
+            })
+
+        } catch (error) {
+            res.status(500).json({
+                message: 'Hubo un error en la solicitud'
+            })
+        }
     }
 }
 
