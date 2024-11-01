@@ -8,7 +8,7 @@ This repository was created exclusively to practice **Node.js**, its integration
 
 1. clone the repository 
 ```bash
-    git clone "repository url"
+    git clone https://github.com/rockop11/ecommerce-mongo-nodejs-server.git
 ```
 
 2. get into the folder
@@ -21,7 +21,7 @@ This repository was created exclusively to practice **Node.js**, its integration
     run npm install
 ```
 
-- This repo needs a .env file to run. Just email me at poncerodrigom@gmail.com to request it.
+- This repo needs a .env file & serviceAccountKey file to run. Just email me at poncerodrigom@gmail.com to request it.
 
 - Save the .env file at the root of the project. (ecommerce-mongo-nodejs-server/.env)
 
