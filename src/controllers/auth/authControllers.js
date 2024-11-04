@@ -4,7 +4,6 @@ const User = require("../../data/mongodb/models/userModel")
 const { envs } = require('../../config/plugins')
 const { storage } = require('../../data/firebase/firebaseConfig');
 const { ref, uploadBytes, getDownloadURL, deleteObject } = require("firebase/storage");
-const { trusted } = require('mongoose');
 
 
 const authApiControllers = {
@@ -211,6 +210,33 @@ const authApiControllers = {
             })
         } catch (err) {
             console.log(err)
+        }
+    },
+
+    getLastProductCreated: async (req, res) => {
+        try {
+            const usersList = await User.find()
+            const usersListLength = usersList.length
+
+            const lastUser = usersList[usersListLength - 1]
+
+            const lastUserObject = lastUser.toObject()
+
+            const imageRef = ref(storage, `users-avatars/${lastUser.email}/${lastUser.image}`)
+            const image = await getDownloadURL(imageRef)
+
+            const lastUserCreated = { ...lastUserObject, image: image }
+
+            const { password: _, ...rest} = lastUserCreated
+
+            res.status(200).json({
+                message: 'Ultimo usuario creado',
+                data: rest
+            })
+        } catch (err) {
+            res.status(500).json({
+                message: 'no se pudo obtener el ultimo usuario creado'
+            })
         }
     },
 
