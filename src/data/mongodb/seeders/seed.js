@@ -6,7 +6,7 @@ const { envs } = require("../../../config/plugins");
 const bcrypt = require('bcrypt');
 
 const mongoUrl = `${envs.MONGO_URL}test-node-db?authSource=admin`;
-const serviceAccount = require(envs.FIREBASE_SERVICE_ACCOUNT);
+const serviceAccount = require('../../firebase/serviceAccountKey.json');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -54,7 +54,7 @@ const users = [
         isAdmin: true
     },
     {
-        name: 'Usuario Regular 4',
+        name: 'Usuario Regular 1',
         username: 'usuario',
         password: bcrypt.hashSync('user123', 10),
         image: 'user-image.jpg',
