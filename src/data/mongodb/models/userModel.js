@@ -6,7 +6,8 @@ const userSchema = new Schema({
     password: String,
     image: String,
     email: String,
-    isAdmin: Boolean
+    isAdmin: Boolean,
+    createdAt: {type: Date, default: Date.now()}
 })
 
 module.exports = model("Users", userSchema) 
