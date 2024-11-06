@@ -10,7 +10,7 @@ const {
     deleteUser,
     editUser,
     getAllUsers,
-    getLastProductCreated,
+    getLastUserCreated,
     login,
     register,
 } = require('../../controllers/auth/authControllers')
@@ -27,6 +27,6 @@ router.delete('/deleteUser/:id', jwtMiddleware, deleteUser)
 
 router.get('/checkToken', jwtMiddleware, checkToken)
 router.get('/allUsers', jwtMiddleware, getAllUsers)
-router.get('/lastUserCreated', jwtMiddleware, getLastProductCreated)
+router.get('/lastUserCreated', jwtMiddleware, getLastUserCreated)
 
 module.exports = router
