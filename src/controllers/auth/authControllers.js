@@ -213,7 +213,7 @@ const authApiControllers = {
         }
     },
 
-    getLastProductCreated: async (req, res) => {
+    getLastUserCreated: async (req, res) => {
         try {
             const usersList = await User.find()
             const usersListLength = usersList.length
