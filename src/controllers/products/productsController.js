@@ -127,23 +127,19 @@ const productsController = {
         }
     },
 
-    //continuar cuando este el front
     editProduct: async (req, res) => {
         try {
             const { id } = req.params
-            const { title, price, discount, stock, category } = req.body
+            const { title, price, discount, stock, category, description } = req.body
             const { files } = req
 
             const existingProduct = await Products.findById(id)
-            console.log(existingProduct)
-            // console.log(req.body)
-            // console.log("files", req.files)
 
-            // if (!existingProduct) {
-            //     return res.status(404).json({
-            //         message: 'Producto no encontrado'
-            //     });
-            // }
+            if (!existingProduct) {
+                return res.status(404).json({
+                    message: 'Producto no encontrado'
+                });
+            }
 
             // existingProduct.title = title || existingProduct.title
             // existingProduct.price = price || existingProduct.price
@@ -159,6 +155,11 @@ const productsController = {
 
             // const updatedProduct = await existingProduct.save()
 
+
+            res.status(200).json({
+                message: `se encontro el producto con id: ${id} es ${existingProduct.title}`
+            })
+
             // res.status(200).json({
             //     message: `se edito el producton con id ${id}`,
             //     data: updatedProduct
@@ -167,6 +168,31 @@ const productsController = {
             console.log(error)
             res.status(500).json({
                 message: 'internal server error'
+            })
+        }
+    },
+
+    deleteProductImage: async (req, res) => {
+        try {
+            const { prodId, folderName, fileName } = req.body
+
+            const updatedProduct = await Products.findOneAndUpdate(
+                { _id: prodId },
+                { $pull: { images: fileName } },
+                { new: true }
+            )
+
+            console.log(updatedProduct)
+
+            const imageRef = ref(storage, `products/${folderName}/${fileName}`)
+            await deleteObject(imageRef)
+
+            res.status(200).json({
+                message: 'se borro la imagen del producto'
+            })
+        } catch (err) {
+            res.status(500).json({
+                message: 'Hubo un error al eliminar la imagen del producto'
             })
         }
     },
@@ -200,7 +226,7 @@ const productsController = {
                 message: "Error interno del servidor"
             });
         }
-    }
+    },
 }
 
 module.exports = productsController
