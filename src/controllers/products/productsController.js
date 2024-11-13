@@ -141,29 +141,35 @@ const productsController = {
                 });
             }
 
-            // existingProduct.title = title || existingProduct.title
-            // existingProduct.price = price || existingProduct.price
-            // existingProduct.discount = discount || existingProduct.discount
-            // existingProduct.stock = stock || existingProduct.stock
-            // existingProduct.category = category || existingProduct.category
+            if (files.length) {
+                const uploadPromises = files.map((file) => {
+                    const storageRef = ref(storage, `products/${title}/${file.originalname}`);
+                    const metadata = {
+                        contentType: file.mimetype
+                    };
 
-            // if (files && files.length > 0) {
-            //     const newImages = files.map(file => file.filename);
-            //     existingProduct.images = [...existingProduct.images, ...newImages];
-            // }
+                    existingProduct.images.push(file.originalname)
 
+                    return uploadBytes(storageRef, file.buffer, metadata);
+                });
 
-            // const updatedProduct = await existingProduct.save()
+                await Promise.all(uploadPromises);
+            }
 
+            existingProduct.title = title || existingProduct.title
+            existingProduct.price = price || existingProduct.price
+            existingProduct.discount = discount || existingProduct.discount
+            existingProduct.stock = stock || existingProduct.stock
+            existingProduct.category = category || existingProduct.category
+            existingProduct.description = description || existingProduct.description
+            existingProduct.updatedAt = new Date()
+
+            const updatedProduct = await existingProduct.save()
 
             res.status(200).json({
-                message: `se encontro el producto con id: ${id} es ${existingProduct.title}`
+                message: `se edito ${existingProduct.title} con id ${id}`,
+                data: updatedProduct
             })
-
-            // res.status(200).json({
-            //     message: `se edito el producton con id ${id}`,
-            //     data: updatedProduct
-            // })
         } catch (error) {
             console.log(error)
             res.status(500).json({
@@ -176,13 +182,11 @@ const productsController = {
         try {
             const { prodId, folderName, fileName } = req.body
 
-            const updatedProduct = await Products.findOneAndUpdate(
+            await Products.findOneAndUpdate(
                 { _id: prodId },
                 { $pull: { images: fileName } },
                 { new: true }
             )
-
-            console.log(updatedProduct)
 
             const imageRef = ref(storage, `products/${folderName}/${fileName}`)
             await deleteObject(imageRef)
@@ -212,9 +216,7 @@ const productsController = {
                 return deleteObject(imageRef);
             });
 
-            // Esperar a que todas las promesas de eliminación se resuelvan o fallen
             await Promise.all(deleteImagePromises);
-
             await Products.findByIdAndDelete(id);
 
             res.status(200).json({
