@@ -5,13 +5,21 @@ const router = express.Router()
 const { upload } = require('../../middlewares/multer')
 const verifyToken = require('../../middlewares/jwt')
 
-const productsController = require('../../controllers/products/productsController')
+const {
+    getAllProducts,
+    getProductById,
+    getLastProductCreated,
+    createProduct,
+    editProduct,
+    deleteProduct,
+    deleteProductImage
+} = require('../../controllers/products/productsController')
 
-router.get('/', verifyToken, productsController.getAllProducts)
+router.get('/', verifyToken, getAllProducts)
 
-router.get('/detail/:id', verifyToken, productsController.getProductById)
+router.get('/detail/:id', verifyToken, getProductById)
 
-router.get('/lastProduct', verifyToken, productsController.getLastProductCreated)
+router.get('/lastProduct', verifyToken, getLastProductCreated)
 
 router.post('/create',
     verifyToken,
@@ -27,7 +35,7 @@ router.post('/create',
                 });
             }
 
-            productsController.createProduct(req, res);
+            createProduct(req, res);
         });
     }
 );
@@ -46,11 +54,13 @@ router.patch('/edit/:id',
                 });
             }
 
-            productsController.editProduct(req, res);
+            editProduct(req, res);
         });
     }
 )
 
-router.delete("/delete/:id", verifyToken, productsController.deleteProduct);
+router.delete('/deleteProductImage', verifyToken, deleteProductImage)
+
+router.delete("/delete/:id", verifyToken, deleteProduct);
 
 module.exports = router
