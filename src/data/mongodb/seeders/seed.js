@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb')
 const { connect, connection } = require('mongoose');
 const admin = require('firebase-admin');
 const ProductModel = require('../models/productModel');
@@ -22,6 +23,7 @@ connect(mongoUrl)
 // Crear productos de ejemplo
 const products = [
     {
+        _id: new ObjectId(),
         title: 'Tv Samsung 65"',
         price: 1319999,
         discount: 5,
@@ -32,6 +34,7 @@ const products = [
         description: 'La Samsung Smart TV de 65 pulgadas ofrece una experiencia visual impresionante con su resolución 4K UHD, brindando colores vibrantes y detalles nítidos. Equipada con tecnología HDR, mejora el contraste en escenas oscuras y brillantes para una imagen más realista. Su diseño ultradelgado se adapta perfectamente a cualquier espacio, y con su sistema operativo Tizen, puedes acceder a tus aplicaciones favoritas como Netflix, YouTube y Disney+ de forma rápida y sencilla. Además, cuenta con asistentes de voz integrados como Alexa y Google Assistant, permitiendo un control fácil e intuitivo.'
     },
     {
+        _id: new ObjectId(),
         title: 'Lampara de pie',
         price: 76999,
         discount: 2,
@@ -82,7 +85,7 @@ const seedDB = async () => {
         for (const image of product.images) {
             const filePath = `${basePath}${image}`;
             await bucket.upload(filePath, {
-                destination: `products/${product.title}/` + image,
+                destination: `products/${product._id}/` + image,
             });
         }
     }

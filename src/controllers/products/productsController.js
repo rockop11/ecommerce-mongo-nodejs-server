@@ -8,7 +8,7 @@ const productsController = {
         const productList = await Products.find()
 
         const productsWithImages = await Promise.all(productList.map(async (product) => {
-            const imagesRef = ref(storage, `products/${product.title}`)
+            const imagesRef = ref(storage, `products/${product._id}`)
 
             const images = await listAll(imagesRef)
 
@@ -31,7 +31,7 @@ const productsController = {
 
             const product = await Products.findById(id)
 
-            const listRef = ref(storage, `products/${product.title}`)
+            const listRef = ref(storage, `products/${id}`)
 
             const imagesList = await listAll(listRef)
 
@@ -63,7 +63,7 @@ const productsController = {
 
             const lastProductObject = lastProduct.toObject();
 
-            const imageRef = ref(storage, `products/${lastProduct.title}/${lastProduct.images[0]}`)
+            const imageRef = ref(storage, `products/${lastProduct._id}/${lastProduct.images[0]}`)
             const image = await getDownloadURL(imageRef)
 
             const lastProductWithImage = { ...lastProductObject, imageUrl: image }
@@ -90,16 +90,6 @@ const productsController = {
                 })
             }
 
-            const uploadPromises = files.map((file) => {
-                const storageRef = ref(storage, `products/${title}/${file.originalname}`);
-                const metadata = {
-                    contentType: file.mimetype
-                };
-                return uploadBytes(storageRef, file.buffer, metadata);
-            });
-
-            await Promise.all(uploadPromises);
-
             const newProduct = await Products.create({
                 title,
                 price,
@@ -113,6 +103,16 @@ const productsController = {
                     return file.originalname
                 })
             })
+
+            const uploadPromises = files.map((file) => {
+                const storageRef = ref(storage, `products/${newProduct._id}/${file.originalname}`);
+                const metadata = {
+                    contentType: file.mimetype
+                };
+                return uploadBytes(storageRef, file.buffer, metadata);
+            });
+
+            await Promise.all(uploadPromises);
 
             res.status(200).json({
                 message: "Producto creado",
@@ -141,9 +141,9 @@ const productsController = {
                 });
             }
 
-            if (files.length) {
+            if (files.length > 0) {
                 const uploadPromises = files.map((file) => {
-                    const storageRef = ref(storage, `products/${title}/${file.originalname}`);
+                    const storageRef = ref(storage, `products/${id}/${file.originalname}`);
                     const metadata = {
                         contentType: file.mimetype
                     };
