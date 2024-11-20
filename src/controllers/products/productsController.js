@@ -212,7 +212,7 @@ const productsController = {
             }
 
             const deleteImagePromises = productToDelete.images.map(image => {
-                const imageRef = ref(storage, `products/${productToDelete.title}/${image}`);
+                const imageRef = ref(storage, `products/${id}/${image}`);
                 return deleteObject(imageRef);
             });
 
