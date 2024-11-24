@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const User = require("../../data/mongodb/models/userModel")
 const { envs } = require('../../config/plugins')
 const { storage } = require('../../data/firebase/firebaseConfig');
@@ -227,7 +228,7 @@ const authApiControllers = {
 
             const lastUserCreated = { ...lastUserObject, image: image }
 
-            const { password: _, ...rest} = lastUserCreated
+            const { password: _, ...rest } = lastUserCreated
 
             res.status(200).json({
                 message: 'Ultimo usuario creado',
@@ -282,6 +283,109 @@ const authApiControllers = {
             res.status(500).json({
                 message: 'Hubo un error en la solicitud'
             })
+        }
+    },
+
+    recoveryLink: async (req, res) => {
+        const { email } = req.body
+
+        if (!email) {
+            return res.status(400).json({
+                message: 'Por favor, proporciona un correo electrónico'
+            });
+        }
+
+        try {
+            const user = await User.findOne({ email })
+
+            if (!user) {
+                return res.status(404).json({
+                    message: 'El correo electrónico no está registrado'
+                });
+            }
+
+            const secret = envs.JWT_SECRET_KEY;
+            const token = jwt.sign({ id: user._id }, secret, { expiresIn: '1h' });
+
+            // const recoveryLink = `https://tuapp.com/auth/recovery-password/${token}`;
+            const recoveryLink = `http://localhost:5173/recoveryPassword/${token}`
+
+            const testAccount = await nodemailer.createTestAccount();
+
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.ethereal.email',
+                port: 587,
+                secure: false, // True para el puerto 465, falso para otros puertos
+                auth: {
+                    user: testAccount.user,
+                    pass: testAccount.pass,
+                },
+            });
+
+            const infoEmail = await transporter.sendMail({
+                from: '"Soporte" <ecommerce@fake.com>',
+                to: email,
+                subject: 'Recuperación de contraseña',
+                html: `
+                  <p>Hola,</p>
+                  <p>Haz clic en el siguiente enlace para recuperar tu contraseña:</p>
+                  <a href="${recoveryLink}">${recoveryLink}</a>
+                  <p>Este enlace expira en 1 hora.</p>
+                `,
+            });
+
+            const previewUrl = nodemailer.getTestMessageUrl(infoEmail);
+
+            res.status(200).json({
+                message: 'Correo de recuperación enviado con éxito',
+                previewUrl
+            });
+        } catch (error) {
+            console.error('Error en solicitud de recuperación:', error);
+            res.status(500).json({ message: 'Error enviando el correo de recuperación' });
+        }
+    },
+
+    recoveryPassword: async (req, res) => {
+        const { token } = req.params
+        const { newPassword } = req.body;
+
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({
+                message: 'La nueva contraseña debe tener al menos 6 caracteres.',
+            });
+        }
+
+        try {
+            const { id } = jwt.verify(token, envs.JWT_SECRET_KEY);
+            const user = await User.findById(id);
+            
+            if (!user) {
+                return res.status(404).json({
+                    message: 'Usuario no encontrado o enlace inválido.',
+                });
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            user.password = hashedPassword;
+            await user.save();
+
+            res.status(200).json({
+                message: 'Contraseña actualizada con éxito.',
+            });
+        } catch (error) {
+            console.error('Error en la recuperación de contraseña:', error);
+
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    message: 'El enlace de recuperación ha expirado.',
+                });
+            }
+
+            res.status(500).json({
+                message: 'Error procesando la recuperación de contraseña.',
+            });
         }
     }
 }

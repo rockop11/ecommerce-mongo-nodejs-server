@@ -13,10 +13,15 @@ const {
     getLastUserCreated,
     login,
     register,
+    recoveryLink,
+    recoveryPassword
 } = require('../../controllers/auth/authControllers')
 
 router.post('/login', login)
 router.post('/register', upload.single('avatar'), register)
+
+router.post('/recoveryLink', recoveryLink)
+router.post('/recoveryPassword/:token', recoveryPassword)
 
 router.put('/editUser', jwtMiddleware, upload.single('avatar'), editUser)
 
