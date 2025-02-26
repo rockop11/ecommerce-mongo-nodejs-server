@@ -171,15 +171,36 @@ const authApiControllers = {
 
     changePassword: async (req, res) => {
         try {
-            const { _id, password } = req.body
+            const { userId, currentPassword, newPassword } = req.body
 
-            await User.findByIdAndUpdate(_id, {
-                password: bcrypt.hashSync(password, 10)
-            })
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({
+                    message: 'debe completar los campos',
+                })
+            }
 
-            res.status(200).json({
-                message: 'se actualizo la contraseña'
-            })
+            const userFounded = await User.findById(userId)
+
+            if (!userFounded) {
+                return res.status(404).json({ message: 'Usuario no encontrado' });
+            }
+
+            const { password } = userFounded
+            const checkPass = bcrypt.compareSync(currentPassword, password);
+
+            if (!checkPass) {
+                return res.status(400).json({
+                    message: 'Error al actualizar contraseña',
+                });
+            }
+
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+            userFounded.password = hashedPassword;
+            await userFounded.save();
+
+            res.status(200).json({ message: 'Contraseña actualizada con éxito' });
 
         } catch (error) {
             res.status(400).json({
@@ -359,7 +380,7 @@ const authApiControllers = {
         try {
             const { id } = jwt.verify(token, envs.JWT_SECRET_KEY);
             const user = await User.findById(id);
-            
+
             if (!user) {
                 return res.status(404).json({
                     message: 'Usuario no encontrado o enlace inválido.',

@@ -2,7 +2,7 @@
 node_modules/
 
 # Ignorar el archivo .env que contiene variables de entorno sensibles
-.env
+.env*
 
 # Ignorar el archivo de claves de Firebase
 src/data/firebase/serviceAccountKey.json
